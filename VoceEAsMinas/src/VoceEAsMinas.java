@@ -4,6 +4,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.Scanner;
 
 public class VoceEAsMinas {
@@ -28,16 +29,17 @@ public class VoceEAsMinas {
 
 		System.out.println("\n--- Inicializando Matriz de Minas para arquivo " + arquivo + " ---");
 		
-		boolean[][] campo = new boolean[1][1];
-		boolean[] temMinaX;
-		boolean[] temMinaY;
-		
+		Linha[] eixoX = new Linha[1];
+		Linha[] eixoY = new Linha[1];
+
 		try (BufferedReader br = Files.newBufferedReader(input, Charset.forName("utf8")))
 		{
 			String linha = br.readLine();
 			Scanner sc = new Scanner(linha).useDelimiter(" ");
 			
 			System.out.println(linha);
+			
+
 			
 			int larguraTerreno = sc.nextInt();
 			System.out.println("Largura do Terreno: " + larguraTerreno);
@@ -48,16 +50,21 @@ public class VoceEAsMinas {
 			long totalCoord = Long.valueOf(larguraTerreno) * Long.valueOf(alturaTerreno);
 			System.out.println("Total de Coordenadas no Terreno: " + totalCoord);
 			double gbMemoria = totalCoord/1073741824.0;
-			System.out.println("Consumo de Memória: " + Math.round(gbMemoria*100)/100.0 + "GB");
-			
+//			System.out.println("Consumo de Memória: " + Math.round(gbMemoria*100)/100.0 + "GB");
+//			
 			// Inicia matriz do tamanho do terreno com todos os pontos falsos			
-			campo = new boolean[larguraTerreno][alturaTerreno];
+			eixoX = new Linha[larguraTerreno];
+			for(int i=0; i<eixoX.length; i++) {
+				eixoX[i] = new Linha();
+			}
+
+			eixoY = new Linha[alturaTerreno];
+			for(int i=0; i<eixoY.length; i++) {
+				eixoY[i] = new Linha();
+			}
+			
 			
 			//Vetores para indicar se ha minas em uma determinada Linha ou Coluna			
-			temMinaX = new boolean[larguraTerreno];
-
-			temMinaY = new boolean[alturaTerreno];
-			
 			
 			//Populando campo com as minas do arquivo e informações relevantes
 			int minaX, minaY;
@@ -67,9 +74,8 @@ public class VoceEAsMinas {
 				minaX = sc.nextInt() - 1;
 				minaY = sc.nextInt() - 1;
 				
-				campo[minaX][minaY] = true;
-				temMinaX[minaX] = true;
-				temMinaY[minaY] = true;
+				eixoX[minaX].addMina(minaY);
+				eixoY[minaY].addMina(minaX);
 				
 			}
 				
@@ -79,8 +85,21 @@ public class VoceEAsMinas {
 		}
 		
 		
-		System.out.println("\n--- Matriz do Campo inicializada com sucesso ---");
-	
+		System.out.println("\n--- Matriz do Campo inicializada com sucesso ---"
+				+ "\n\n--- Criando cópias dos eixos X e Y ---");
+		
+		Linha[] copiaEixoX = copiarEixo(eixoX);
+		Linha[] copiaEixoY = copiarEixo(eixoY);
+		
+		System.out.println("\n--- Cópias criadas com sucesso ---");
+		
 	}
 	
+	public static Linha[] copiarEixo(Linha[] eixo) {
+		Linha[] copia = new Linha[eixo.length];
+		for(int i = 0; i<eixo.length; i++) {
+			copia[i] = eixo[i].copiar();
+		}
+		return copia;
+	}
 }
