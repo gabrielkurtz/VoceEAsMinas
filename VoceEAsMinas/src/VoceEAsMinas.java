@@ -86,12 +86,9 @@ public class VoceEAsMinas {
 		
 		
 		System.out.println("\n--- Matriz do Campo inicializada com sucesso ---"
-				+ "\n\n--- Criando cópias dos eixos X e Y ---");
+				+ "\n\n--- Procurando Maior Retangulo ---");
 		
-		Linha[] copiaEixoX = copiarEixo(eixoX);
-		Linha[] copiaEixoY = copiarEixo(eixoY);
-		
-		System.out.println("\n--- Cópias criadas com sucesso ---");
+		procuraMaiorArea(eixoX, eixoY);
 		
 	}
 	
@@ -101,5 +98,106 @@ public class VoceEAsMinas {
 			copia[i] = eixo[i].copiar();
 		}
 		return copia;
+	}
+	
+	public static void procuraMaiorArea(Linha[] eixoX, Linha[] eixoY) {
+		long maiorArea = 0;
+		int maiorX = 0;
+		int maiorY = 0;
+		
+		//Procura linha que pode ser inicio de maior retangulo (Sucede linha com mina ou é a primeira linha)
+		boolean[] podeIniciarMaiorY = new boolean[eixoY.length];
+		for(int i = 0; i<eixoY.length;i++) {
+			if(i==0) {
+				podeIniciarMaiorY[i] = true;
+			}
+			else if(eixoY[i-1].temMina()) {
+				podeIniciarMaiorY[i] = true;
+			}
+		}
+		
+		//Procura coluna que pode ser inicio de maior retangulo (Sucede coluna com mina ou é a primeira coluna)
+		boolean[] podeIniciarMaiorX = new boolean[eixoX.length];
+		for(int i = 0; i<eixoX.length;i++) {
+			if(i==0) {
+				podeIniciarMaiorX[i] = true;
+			}
+			else if(eixoX[i-1].temMina()) {
+				podeIniciarMaiorX[i] = true;
+			}
+		}
+		
+		//Procura linha que pode ser final de maior retangulo (Antecede linha com mina ou é a última linha)
+		boolean[] podeEncerrarMaiorY = new boolean[eixoY.length];
+		for(int i = 0; i<eixoY.length; i++) {
+			if(i==eixoY.length-1) {
+				podeEncerrarMaiorY[i] = true;
+			}
+			else if(eixoY[i+1].temMina()) {
+				podeEncerrarMaiorY[i] = true;
+			}
+		}
+
+/*		//Procura coluna que pode ser final de maior retangulo (Antecede coluna com mina ou é a última coluna)
+		boolean[] podeEncerrarMaiorX = new boolean[eixoX.length];
+		for(int i = 0; i<eixoY.length; i++) {
+			if(i==eixoX.length-1) {
+				podeEncerrarMaiorX[i] = true;
+			}
+			else if(eixoX[i+1].temMina()) {
+				podeEncerrarMaiorX[i] = true;
+			}
+		} */
+		
+		System.out.println("--- Iniciando Calculo ---");
+				
+		//Iterando possiveis linhas iniciais
+		for(int y = 0; y<eixoY.length; y++) {
+			
+			if(podeIniciarMaiorY[y]){
+			
+				System.out.println("Linha " + y + " Maior: " + maiorArea + " X: " + maiorX + " Y: " + maiorY);
+				
+				Linha[] copiaEixoX = copiarEixo(eixoX);
+				Linha[] copiaEixoY = copiarEixo(eixoY);
+				
+				//Iterando possiveis colunas iniciais
+				for(int x = 0; x<eixoX.length; x++) {
+					if(podeIniciarMaiorX[x]) {
+						long maiorAreaDaCoord = 0;
+						int areaLivreDireita = eixoX.length-x;
+						
+						//Varredura por linha;
+						for(int y1 = y; y1<eixoY.length; y1++) {
+							long areaVarredura = 0;
+							//Atualiza area livre a direita para coordenada
+							if(copiaEixoY[y1].temMina()) {
+								for(int pos : copiaEixoY[y1].posicaoMinas) {
+									if(pos>=x && pos-x<areaLivreDireita) {
+										areaLivreDireita = pos-x;
+									}
+								}
+							}
+							
+							//Calcula area caso possa ser a maior
+							if(podeEncerrarMaiorY[y1]) {
+								if(((y1-y+1)*(areaLivreDireita)+1) > maiorAreaDaCoord) {
+									maiorAreaDaCoord = ((y1-y+1)*(areaLivreDireita));
+								}
+							}
+						}
+						
+						if(maiorAreaDaCoord > maiorArea) {
+							maiorArea = maiorAreaDaCoord;
+							maiorX = x;
+							maiorY = y;
+						}
+					}
+				}
+			}
+		}
+	
+		System.out.println("--- Sucesso até aqui ---");
+		
 	}
 }
