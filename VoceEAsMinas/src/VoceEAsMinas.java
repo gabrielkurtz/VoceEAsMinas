@@ -138,14 +138,13 @@ public class VoceEAsMinas {
 			}
 		}
 
-		Linha[] copiaEixoX = copiarEixo(eixoX);
-		Linha[] copiaEixoY = copiarEixo(eixoY);
-		
 		//Iterando possiveis linhas iniciais
 		for(int y = 0; y<eixoY.length; y++) {
 
 			if(podeIniciarMaiorY[y]){
-			
+				Linha[] copiaEixoX = copiarEixo(eixoX);
+				Linha[] copiaEixoY = copiarEixo(eixoY);
+				
 //				Descomentar para ter o feedback linha a linha no terminal
 //				System.out.println("Linha " + y + " - Maior: " + maiorArea + " - X: " + maiorX + " - Y: " + maiorY);
 				
@@ -173,7 +172,7 @@ public class VoceEAsMinas {
 								if(((y1-y+1)*(areaLivreDireita)+1) > maiorAreaDaCoord) {
 									maiorAreaDaCoord = ((y1-y+1)*(areaLivreDireita));
 									auxYF = y1;
-									auxXF = x + areaLivreDireita;
+									auxXF = x + areaLivreDireita -1;
 								}
 							}
 						}
