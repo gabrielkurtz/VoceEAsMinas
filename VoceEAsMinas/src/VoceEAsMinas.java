@@ -27,7 +27,10 @@ public class VoceEAsMinas {
 		String arquivo = in.nextLine();
 		Path input = Paths.get(arquivo);
 
-		System.out.println("\n--- Inicializando Matriz de Minas para arquivo " + arquivo + " ---");
+		long startTime = System.nanoTime();
+		
+		System.out.println("\n--- Iniciando Cronômetro ---"
+				+ "\n--- Inicializando Estrutura de Minas para arquivo " + arquivo + " ---");
 		
 		Linha[] eixoX = new Linha[1];
 		Linha[] eixoY = new Linha[1];
@@ -39,20 +42,16 @@ public class VoceEAsMinas {
 			
 			System.out.println(linha);
 			
-
-			
 			int larguraTerreno = sc.nextInt();
-			System.out.println("Largura do Terreno: " + larguraTerreno);
 			int alturaTerreno = sc.nextInt();
-			System.out.println("Altura do Terreno: " + alturaTerreno);
+			System.out.println("Largura do Terreno: " + larguraTerreno + " - Altura do Terreno: " + alturaTerreno);
 			int numeroMinas = sc.nextInt();
-			System.out.println("Número de Minas: " + numeroMinas);
 			long totalCoord = Long.valueOf(larguraTerreno) * Long.valueOf(alturaTerreno);
-			System.out.println("Total de Coordenadas no Terreno: " + totalCoord);
-			double gbMemoria = totalCoord/1073741824.0;
+			System.out.println("Número de Minas: " + numeroMinas + " - Total de Coordenadas no Terreno: " + totalCoord);
+//			double gbMemoria = totalCoord/1073741824.0;
 //			System.out.println("Consumo de Memória: " + Math.round(gbMemoria*100)/100.0 + "GB");
-//			
-			// Inicia matriz do tamanho do terreno com todos os pontos falsos			
+
+			// Inicia vetores do tamanho do terreno com todos os pontos falsos			
 			eixoX = new Linha[larguraTerreno];
 			for(int i=0; i<eixoX.length; i++) {
 				eixoX[i] = new Linha();
@@ -62,9 +61,6 @@ public class VoceEAsMinas {
 			for(int i=0; i<eixoY.length; i++) {
 				eixoY[i] = new Linha();
 			}
-			
-			
-			//Vetores para indicar se ha minas em uma determinada Linha ou Coluna			
 			
 			//Populando campo com as minas do arquivo e informações relevantes
 			int minaX, minaY;
@@ -76,20 +72,22 @@ public class VoceEAsMinas {
 				
 				eixoX[minaX].addMina(minaY);
 				eixoY[minaY].addMina(minaX);
-				
 			}
-				
 		}
 		catch (IOException x) {
 			System.err.format("Erro de E/S: %s%n", x);
 		}
 		
 		
-		System.out.println("\n--- Matriz do Campo inicializada com sucesso ---"
-				+ "\n\n--- Procurando Maior Retangulo ---");
+		System.out.println("--- Estrutura do Campo inicializada com sucesso ---"
+				+ "\n--- Procurando Maior Retangulo ---");
 		
 		procuraMaiorArea(eixoX, eixoY);
 		
+		long endTime = System.nanoTime();
+		double duration = ((endTime*1.0 - startTime)/1000000000);
+		duration = (Math.round(duration*100)/100.0);
+		System.out.println("--- Tempo Total de Execução: " + duration + " segundos ---");
 	}
 	
 	public static Linha[] copiarEixo(Linha[] eixo) {
@@ -104,6 +102,8 @@ public class VoceEAsMinas {
 		long maiorArea = 0;
 		int maiorX = 0;
 		int maiorY = 0;
+		int maiorXF = 0;
+		int maiorYF = 0;
 		
 		//Procura linha que pode ser inicio de maior retangulo (Sucede linha com mina ou é a primeira linha)
 		boolean[] podeIniciarMaiorY = new boolean[eixoY.length];
@@ -138,38 +138,27 @@ public class VoceEAsMinas {
 			}
 		}
 
-/*		//Procura coluna que pode ser final de maior retangulo (Antecede coluna com mina ou é a última coluna)
-		boolean[] podeEncerrarMaiorX = new boolean[eixoX.length];
-		for(int i = 0; i<eixoY.length; i++) {
-			if(i==eixoX.length-1) {
-				podeEncerrarMaiorX[i] = true;
-			}
-			else if(eixoX[i+1].temMina()) {
-				podeEncerrarMaiorX[i] = true;
-			}
-		} */
+		Linha[] copiaEixoX = copiarEixo(eixoX);
+		Linha[] copiaEixoY = copiarEixo(eixoY);
 		
-		System.out.println("--- Iniciando Calculo ---");
-				
 		//Iterando possiveis linhas iniciais
 		for(int y = 0; y<eixoY.length; y++) {
-			
+
 			if(podeIniciarMaiorY[y]){
 			
-				System.out.println("Linha " + y + " Maior: " + maiorArea + " X: " + maiorX + " Y: " + maiorY);
-				
-				Linha[] copiaEixoX = copiarEixo(eixoX);
-				Linha[] copiaEixoY = copiarEixo(eixoY);
+//				Descomentar para ter o feedback linha a linha no terminal
+//				System.out.println("Linha " + y + " - Maior: " + maiorArea + " - X: " + maiorX + " - Y: " + maiorY);
 				
 				//Iterando possiveis colunas iniciais
 				for(int x = 0; x<eixoX.length; x++) {
 					if(podeIniciarMaiorX[x]) {
 						long maiorAreaDaCoord = 0;
 						int areaLivreDireita = eixoX.length-x;
+						int auxXF = 0;
+						int auxYF = 0;
 						
 						//Varredura por linha;
 						for(int y1 = y; y1<eixoY.length; y1++) {
-							long areaVarredura = 0;
 							//Atualiza area livre a direita para coordenada
 							if(copiaEixoY[y1].temMina()) {
 								for(int pos : copiaEixoY[y1].posicaoMinas) {
@@ -183,6 +172,8 @@ public class VoceEAsMinas {
 							if(podeEncerrarMaiorY[y1]) {
 								if(((y1-y+1)*(areaLivreDireita)+1) > maiorAreaDaCoord) {
 									maiorAreaDaCoord = ((y1-y+1)*(areaLivreDireita));
+									auxYF = y1;
+									auxXF = x + areaLivreDireita;
 								}
 							}
 						}
@@ -191,13 +182,19 @@ public class VoceEAsMinas {
 							maiorArea = maiorAreaDaCoord;
 							maiorX = x;
 							maiorY = y;
+							maiorXF = auxXF;
+							maiorYF = auxYF;
 						}
 					}
 				}
 			}
 		}
-	
-		System.out.println("--- Sucesso até aqui ---");
+		
+		System.out.println("--- Maior Área Livre de Minas ---"
+				+ "\nCoordenadas (X,Y inicial e final)"
+				+ "\nXi: " + (maiorX + 1) + "  Yi: " + (maiorY + 1)
+				+ "\nXf: " + (maiorXF + 1) + "  Yf: " + (maiorYF + 1)
+				+ "\nÁrea: " + maiorArea);
 		
 	}
 }
